@@ -17,7 +17,7 @@
 	 */
 	async function editTeacherData(id) {
 		try {
-			let { id, ...submitInfo } = classInfo;
+			let { id, ...submitInfo } = teacherInfo;
 			await setDoc(doc(db, 'teachers', id), submitInfo);
 		} catch (error) {
 			console.log(error);
