@@ -6,8 +6,8 @@
 	import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 	import { db } from '../../firebase';
 	import { timeslots } from '../../dummyData';
-	import CreateModal from '$lib/CreateModal.svelte';
-	import EditModal from '$lib/EditModal.svelte';
+	import CreateTeacherModal from '$lib/CreateTeacherModal.svelte';
+	import EditTeacherModal from '$lib/EditTeacherModal.svelte';
 	import CreateButton from '$lib/CreateButton.svelte';
 	import EditButton from '$lib/EditButton.svelte';
 
@@ -15,14 +15,16 @@
 	 * @type {any[]}
 	 */
 	let data = [];
+	let teachers = [];
 	/**
 	 * @type {any}
 	 */
-	let selectedClass;
-	let selectedTimeslot = 'All';
+	let selectedTeacher;
+	let searchedTeacher = '';
 
 	onMount(() => {
 		getClasses();
+		getTeachers();
 	});
 	async function getClasses() {
 		try {
@@ -36,6 +38,24 @@
 					classes = [item, ...classes];
 				});
 				data = classes;
+			});
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	async function getTeachers() {
+		try {
+			onSnapshot(collection(db, 'teachers'), (querySnapshot) => {
+				/**
+				 * @type {any[]}
+				 */
+				let tchs = [];
+				querySnapshot.forEach((doc) => {
+					let item = { ...doc.data(), id: doc.id };
+					tchs = [item, ...tchs];
+				});
+				teachers = tchs;
 			});
 		} catch (error) {
 			console.log(error);
@@ -99,46 +119,71 @@
 			key: 'observer',
 			title: 'Observer',
 			value: (/** @type {{ observer: any; }} */ v) => v.observer
-		},
-		{
-			key: 'edit',
-			title: 'Edit',
-			renderComponent: EditButton
 		}
 	];
 </script>
 
 <div class="container">
-	<h1>Telebort Timetable</h1>
+	<h1>Telebort Teacher Timetable</h1>
 	<CreateButton />
 	<div class="pb-3">
 		<label>
-			<input type="radio" bind:group={selectedTimeslot} value={'All'} />
-			All
+			Teacher name
+			<input type="text" bind:value={searchedTeacher} />
 		</label>
-		{#each timeslots as timeslot}
-			<label class="px-2">
-				<input type="radio" bind:group={selectedTimeslot} value={timeslot} />
-				{timeslot}
-			</label>
-		{/each}
-		<!-- <button class="btn btn-primary" on:click={generateData}> Filter timeslot </button> -->
 	</div>
-
 	<div class="row">
 		<SvelteTable
-			columns={COLUMNS}
-			rows={data.filter((/** @type {{ timeslot: string; }} */ c) =>
-				selectedTimeslot === 'All' ? true : c.timeslot === selectedTimeslot
-			)}
+			columns={[{
+				key: 'id',
+				title: 'Id',
+				value: (/** @type {{ id: any; }} */ v) => v.id,
+				renderValue: () => ''
+			},
+			{
+				key: 'name',
+				title: 'Name',
+				value: (/** @type {{ name: any; }} */ v) => v.name,
+				sortable: true
+			},
+			{
+				key: 'programs',
+				title: 'Programs',
+				value: (/** @type {{ batch: any; }} */ v) => v.programs
+			},
+			{
+				key: 'timeslots',
+				title: 'Timeslots',
+				value: (/** @type {{ program: any; }} */ v) => v.timeslots,
+				sortable: true
+			},
+			{
+			key: 'edit',
+			title: 'Edit',
+			renderComponent: EditButton
+		}]}
+			rows={teachers.filter((/** @type {{ timeslot: string; }} */ c) =>
+			searchedTeacher === '' || searchedTeacher === c.name
+		)}
 			classNameTable={['table table-striped']}
 			classNameThead={['table-primary']}
 			classNameSelect={['custom-select']}
 			on:clickRow={(e) => {
-				selectedClass = e.detail.row;
+				selectedTeacher = e.detail.row;
 			}}
 		/>
 	</div>
+	<div class="row">
+		<SvelteTable
+			columns={COLUMNS}
+			rows={data.filter((/** @type {{ timeslot: string; }} */ c) =>
+				searchedTeacher === '' || searchedTeacher === c.main || searchedTeacher === c.faci1 ||searchedTeacher === c.faci2 ||searchedTeacher === c.faci3 ||searchedTeacher === c.faci4 || c.observer.includes(searchedTeacher) 
+			)}
+			classNameTable={['table table-striped']}
+			classNameThead={['table-primary']}
+			classNameSelect={['custom-select']}
+		/>
+	</div>
 </div>
-<EditModal classInfo={selectedClass} />
-<CreateModal />
+<EditTeacherModal teacherInfo={selectedTeacher} />
+<CreateTeacherModal />

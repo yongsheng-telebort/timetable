@@ -1,0 +1,72 @@
+<script>
+	import { collection, addDoc } from 'firebase/firestore';
+	import { db } from '../firebase';
+	import {timeslots, programs} from '../dummyData'
+
+	/**
+	 * @type {{name: string; timeslots: string; programs: string;}}
+	 */
+	let teacherInfo = {
+		name: '',
+		timeslots: [],
+		programs: [],
+	};
+	let yes
+
+	async function createNewTeacher() {
+		try {
+			const docRef = await addDoc(collection(db, 'teachers'), teacherInfo);
+		} catch (error) {
+			console.log(error);
+		}
+	}
+</script>
+
+<div class="modal fade" id="new" tabindex="-1">
+	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+		<div class="modal-content">
+			<div class="modal-header">
+				<h5 class="modal-title">New Teacher</h5>
+				<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" />
+			</div>
+			<div class="modal-body">
+				<div class="container">
+					<div class="row mt-3 text-center row">
+						<div class="mb-2">
+							<h5>Name</h5>
+							<input bind:value={teacherInfo.name} class="mb-2" />
+						</div>
+						<div class="mb-2 col-6">
+							<h5>Programs</h5>
+							{#each programs as program}
+								<div class="mr-1">
+									<input type="checkbox" bind:group={teacherInfo.programs} value={program} /> {program}
+								</div>
+							{/each}
+						</div>
+						<div class="mb-2 col-6">
+							<h5>Timeslots</h5>
+							{#each timeslots as timeslot}
+							<div class="mr-1">
+								<input type="checkbox" bind:group={teacherInfo.timeslots} value={timeslot} /> {timeslot}
+							</div>
+							{/each}
+						</div>
+					</div>
+				</div>
+				<div class="row px-5" />
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-secondary" data-bs-dismiss="modal"> Cancel </button>
+				<button
+					type="button"
+					class="btn btn-primary"
+					data-bs-dismiss="modal"
+					on:click={createNewTeacher}
+				>
+					Save
+				</button>
+			</div>
+		</div>
+	</div>
+</div>
