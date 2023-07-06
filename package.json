@@ -26,6 +26,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@sveltejs/adapter-vercel": "^3.0.1",
 		"firebase": "^9.23.0",
 		"svelte-table": "^0.6.1"
 	}
