@@ -27,7 +27,7 @@
 	}
 </script>
 
-<div class="modal fade" id="newClass" tabindex="-1">
+<div class="modal fade" id="new" tabindex="-1">
 	<div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
 		<div class="modal-content">
 			<div class="modal-header">

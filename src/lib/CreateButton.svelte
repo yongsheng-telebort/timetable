@@ -1,7 +1,7 @@
 <input
 class="btn btn-light mb-2"
 type="button"
-value="+ Add class"
+value="+ Add"
 data-bs-toggle="modal"
-data-bs-target="#newClass"
+data-bs-target="#new"
 />

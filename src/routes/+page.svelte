@@ -6,8 +6,8 @@
 	import { collection, onSnapshot, doc, deleteDoc } from 'firebase/firestore';
 	import { db } from '../firebase';
 	import { timeslots } from '../dummyData';
-	import CreateModal from '$lib/CreateModal.svelte';
-	import EditModal from '$lib/EditModal.svelte';
+	import CreateClassModal from '$lib/CreateClassModal.svelte';
+	import EditClassModal from '$lib/EditClassModal.svelte';
 	import CreateButton from '$lib/CreateButton.svelte';
 	import EditButton from '$lib/EditButton.svelte';
 
@@ -15,14 +15,33 @@
 	 * @type {any[]}
 	 */
 	let data = [];
+	let teachers = [];
 	/**
 	 * @type {any}
 	 */
 	let selectedClass;
 	let selectedTimeslot = 'All';
+	let teachersOnDuty = []
+	let filteredData;
+	let filteredTeacher;
+
+	$: {
+		filteredData = data.filter((/** @type {{ timeslot: string; }} */ c) =>
+				selectedTimeslot === 'All' ? true : c.timeslot === selectedTimeslot
+			)
+		teachersOnDuty = []
+		filteredData.forEach((d) => {
+			teachersOnDuty.push(d.faci1)
+			teachersOnDuty.push(d.faci2)
+			teachersOnDuty.push(d.faci3)
+			teachersOnDuty.push(d.faci4)
+		})
+		filteredTeacher = teachers.filter((t)=> !teachersOnDuty.includes(t.name) && t.timeslots.includes(selectedTimeslot))
+	}
 
 	onMount(() => {
 		getClasses();
+		getTeachers();
 	});
 	async function getClasses() {
 		try {
@@ -36,6 +55,24 @@
 					classes = [item, ...classes];
 				});
 				data = classes;
+			});
+		} catch (error) {
+			console.log(error);
+		}
+	}
+
+	async function getTeachers() {
+		try {
+			onSnapshot(collection(db, 'teachers'), (querySnapshot) => {
+				/**
+				 * @type {any[]}
+				 */
+				let tchs = [];
+				querySnapshot.forEach((doc) => {
+					let item = { ...doc.data(), id: doc.id };
+					tchs = [item, ...tchs];
+				});
+				teachers = tchs;
 			});
 		} catch (error) {
 			console.log(error);
@@ -109,7 +146,7 @@
 </script>
 
 <div class="container">
-	<h1>Telebort Timetable</h1>
+	<h1>Telebort Class Timetable</h1>
 	<CreateButton />
 	<div class="pb-3">
 		<label>
@@ -122,15 +159,12 @@
 				{timeslot}
 			</label>
 		{/each}
-		<!-- <button class="btn btn-primary" on:click={generateData}> Filter timeslot </button> -->
 	</div>
 
 	<div class="row">
 		<SvelteTable
 			columns={COLUMNS}
-			rows={data.filter((/** @type {{ timeslot: string; }} */ c) =>
-				selectedTimeslot === 'All' ? true : c.timeslot === selectedTimeslot
-			)}
+			rows={filteredData}
 			classNameTable={['table table-striped']}
 			classNameThead={['table-primary']}
 			classNameSelect={['custom-select']}
@@ -139,6 +173,39 @@
 			}}
 		/>
 	</div>
+	<div class="row">
+		<h4>Available Teachers:</h4>
+		<SvelteTable
+			columns={[{
+				key: 'id',
+				title: 'Id',
+				value: (/** @type {{ id: any; }} */ v) => v.id,
+				renderValue: () => ''
+			},
+			{
+				key: 'name',
+				title: 'Name',
+				value: (/** @type {{ name: any; }} */ v) => v.name,
+				sortable: true
+			},
+			{
+				key: 'programs',
+				title: 'Programs',
+				value: (/** @type {{ batch: any; }} */ v) => v.programs
+			},
+			{
+				key: 'timeslots',
+				title: 'Timeslots',
+				value: (/** @type {{ program: any; }} */ v) => v.timeslots,
+				sortable: true
+			},
+			]}
+			rows={filteredTeacher}
+			classNameTable={['table table-striped']}
+			classNameThead={['table-primary']}
+			classNameSelect={['custom-select']}
+		/>
+	</div>
 </div>
-<EditModal classInfo={selectedClass} />
-<CreateModal />
+<EditClassModal classInfo={selectedClass} />
+<CreateClassModal/>
