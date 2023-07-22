@@ -146,7 +146,7 @@
 </script>
 
 <div class="container">
-	<h1>Telebort Class Timetable</h1>
+	<h1>Program E Class Timetable</h1>
 	<CreateButton />
 	<div class="pb-3">
 		<label>
